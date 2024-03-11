@@ -1,9 +1,13 @@
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
 
   const [input, setInput] = useState('100');
+  const [ftir2, setFtir2] = useState('0');
+  const [ftir3, setFtir3] = useState('0');
+  const [ftir4, setFtir4] = useState('0');
+  const [ftir5, setFtir5] = useState('0');
 
   const [parte1Item1, setParteItem1] = useState('0');
   const [silumtaneousPolicy, setSilumtaneousPolicy] = useState('0');
@@ -26,15 +30,40 @@ function App() {
   const [additionalExpenses3, setAdditionalExpenses3] = useState('31.50');
   const [additionalExpenses4, setAdditionalExpenses4] = useState('200');
 
+    // Florida Title Insurance Rates
+    const handleChangeText = e => {
+
+      setParteItem1(e.target.value);
+  
+      if(e.target.value < 17392.17) {setInput(100);setFtir2(0);setFtir3(0);setFtir4(0);setFtir5(0);}
+      if(e.target.value <= 100000) {setFtir2(0);setFtir3(0);setFtir4(0);setFtir5(0);}
+      if(e.target.value <= 1000000) {setFtir3(0);setFtir4(0);setFtir5(0);}
+      if(e.target.value <= 5000000) {setFtir4(0);setFtir5(0);}
+      if(e.target.value <= 10000000) setFtir5(0);
+      if(e.target.value >= 17392.17 && e.target.value <= 100000) setInput((e.target.value / 1000) * 5.75);
+      else if(e.target.value > 100000) setInput((100000 / 1000) * 5.75);
+  
+      if(e.target.value > 100000 && e.target.value <= 1000000) setFtir2(((e.target.value - 100000) / 1000) * 5);
+      else if(e.target.value > 1000000) setFtir2(((1000000 - 100000) / 1000) * 5);
+  
+      if(e.target.value > 1000000 && e.target.value <= 5000000) setFtir3(((e.target.value - 1000000) / 1000) * 2.50);
+      else if(e.target.value > 5000000) setFtir3(((5000000 - 1000000) / 1000) * 2.50);
+  
+      if(e.target.value > 5000000 && e.target.value <= 10000000) setFtir4(((e.target.value - 5000000) / 1000) * 2.25);
+      else if(e.target.value > 10000000) {
+        setFtir4(((10000000 - 5000000) / 1000) * 2.25);
+        setFtir5(((e.target.value - 10000000) / 1000) * 2);
+      }
+      console.log(input);
+    }
+
   const floridaTitleInsuranceRates = e => {
     if(e.target.checked && e.target.id === 'silumtaneousPolicy')setSilumtaneousPolicy(25);
     else if(e.target.checked === false && e.target.id === 'silumtaneousPolicy')setSilumtaneousPolicy(0);
   }
 
-  let insuranceRate = Number(input) + Number(silumtaneousPolicy);
+  let insuranceRate = Number(input) + Number(ftir2) + Number(ftir3) + Number(ftir4) + Number(ftir5) + Number(silumtaneousPolicy);
   let porcentajeInsuranceRate = (insuranceRate * 10) / 100;
-
-
 
   const handleChange = e => {
     if(e.target.checked && e.target.id === 'item6') setItem6(25);
@@ -82,16 +111,24 @@ function App() {
 
   }
 
-  const handleChangeText = e => {
-    setInput(e.target.value);
-    setParteItem1(e.target.value);
-    if(e.target.value <= 100){
-      setInput(100);
-    }
-  }
+  useEffect(() => {
+    let a = document.getElementsByName('item8');
+    let e = document.getElementsByName('item11');
+    let o = document.getElementsByName('item9-10');
 
+    for(let i=0;i<a.length;i++){
+       if(a[i].checked) setItem8(porcentajeInsuranceRate);
+       else setItem8(0);
+       if(e[i].checked) setItem11(porcentajeInsuranceRate);
+       else setItem11(0);
+       if(o[i].checked && o[i].id === 'item9') setItem9(porcentajeInsuranceRate);
+       else setItem9(0);
+       if(o[i].checked && o[i].id === 'item10') setItem10(porcentajeInsuranceRate);
+       else setItem10(0);
+    }
+  }, [porcentajeInsuranceRate])
   
-  let resultado = Number(item1) + Number(item2) + Number(item3) + Number(item4) + Number(item5) + Number(item6) + Number(item7) + Number(item8) + Number(item9) + Number(item10) + Number(item11) + Number(item12) + Number(input) + Number(additionalExpenses1) + Number(additionalExpenses2) + Number(additionalExpenses3) + Number(additionalExpenses4) + Number(silumtaneousPolicy);
+  let resultado = Number(item1) + Number(item2) + Number(item3) + Number(item4) + Number(item5) + Number(item6) + Number(item7) + Number(item8) + Number(item9) + Number(item10) + Number(item11) + Number(item12) + Number(input) + Number(additionalExpenses1) + Number(additionalExpenses2) + Number(additionalExpenses3) + Number(additionalExpenses4) + Number(silumtaneousPolicy) + Number(ftir2) + Number(ftir3) + Number(ftir4) + Number(ftir5);
   
   return (
     <div className="App">
@@ -106,35 +143,65 @@ function App() {
           <div className="Boton">
               <p className="Boton__titulo">$0 to $100,000: $5.75 per $1000 (min $100)</p>
               <div className='Boton__contenedorPrecioYCheck'>
-                <p className="Boton__precio">$ {Number(input).toFixed(2)}</p>
+                <p className="Boton__precio">$ {Intl.NumberFormat("en-US", {
+                  style: "decimal",
+                  useGrouping: true,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                  currencyDisplay: "symbol",
+                }).format(input)}</p>
               </div>
           </div>
 
           <div className="Boton">
               <p className="Boton__titulo">$100,000 to $1 million: $5.00 per $1000</p>
               <div className='Boton__contenedorPrecioYCheck'>
-                <p className="Boton__precio">$ </p>
+                <p className="Boton__precio">$ {Intl.NumberFormat("en-US", {
+                  style: "decimal",
+                  useGrouping: true,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                  currencyDisplay: "symbol",
+                }).format(ftir2)}</p>
               </div>
           </div>
 
           <div className="Boton">
               <p className="Boton__titulo">$1 million to $5 million: $2.50 per $1000</p>
               <div className='Boton__contenedorPrecioYCheck'>
-                <p className="Boton__precio">$ </p>
+                <p className="Boton__precio">$ {Intl.NumberFormat("en-US", {
+                  style: "decimal",
+                  useGrouping: true,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                  currencyDisplay: "symbol",
+                }).format(ftir3)}</p>
               </div>
           </div>
 
           <div className="Boton">
               <p className="Boton__titulo">$5 million to $10 million: $2.25 per $1000</p>
               <div className='Boton__contenedorPrecioYCheck'>
-                <p className="Boton__precio">$ </p>
+                <p className="Boton__precio">$ {Intl.NumberFormat("en-US", {
+                  style: "decimal",
+                  useGrouping: true,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                  currencyDisplay: "symbol",
+                }).format(ftir4)}</p>
               </div>
           </div>
 
           <div className="Boton">
               <p className="Boton__titulo">$10 million: $2.00 per $1000</p>
               <div className='Boton__contenedorPrecioYCheck'>
-                <p className="Boton__precio">$ </p>
+                <p className="Boton__precio">$ {Intl.NumberFormat("en-US", {
+                  style: "decimal",
+                  useGrouping: true,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                  currencyDisplay: "symbol",
+                }).format(ftir5)}</p>
               </div>
           </div>
 
